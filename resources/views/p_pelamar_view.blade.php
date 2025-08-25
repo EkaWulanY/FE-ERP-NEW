@@ -12,12 +12,34 @@
             background-color: #4E71FF;
             transition: background-color 0.3s ease;
         }
+        /* Style untuk Modal */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 24px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-200">
     <div class="bg-[#072A75] text-white p-4 flex justify-between items-center shadow-lg">
         <div class="flex items-center">
-            <!-- Menggunakan gambar logo.jpg -->
             <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-8 w-8 mr-2 rounded-full">
             <span class="text-xl font-bold">XMLTRONIK-KARIR</span>
         </div>
@@ -29,10 +51,8 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="container-wrapper">
-        <!-- Search and Filters Section -->
-        <section class="bg-white p-6 rounded-xl my-8 card-shadow">
+    <main class="container mx-auto px-4 py-8">
+        <section class="bg-white p-6 rounded-xl my-8 shadow-lg">
             <div class="flex items-center space-x-4">
                 <div class="relative w-full">
                     <input type="text" id="keywords" placeholder="Keywords" class="w-full p-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -44,7 +64,6 @@
                 </button>
             </div>
             <div class="flex flex-wrap items-center mt-4 space-x-4">
-                <!-- Dropdown Pendidikan -->
                 <select id="education-filter" class="p-2 border rounded-lg w-full md:w-auto mt-2 md:mt-0">
                     <option value="">Pendidikan</option>
                     <option value="SMK">SMK</option>
@@ -54,16 +73,12 @@
                     <option value="S2">S2</option>
                     <option value="S3">S3</option>
                 </select>
-                <!-- Dropdown Job Type -->
                 <select id="job-type-filter" class="p-2 border rounded-lg w-full md:w-auto mt-2 md:mt-0">
                     <option value="">Job Type</option>
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Kontrak">Kontrak</option>
-                    <option value="Magang">Magang</option>
-                    <option value="Freelance">Freelance</option>
+                    @foreach ($jobs as $job)
+                        <option value="{{ $job->posisi }}">{{ $job->posisi }}</option>
+                    @endforeach
                 </select>
-                <!-- Dropdown Lokasi -->
                 <select id="location-filter" class="p-2 border rounded-lg w-full md:w-auto mt-2 md:mt-0">
                     <option value="">Lokasi</option>
                     <option value="Cilacap">Cilacap</option>
@@ -74,23 +89,19 @@
             </div>
         </section>
 
-        <!-- Job Listings -->
         <section id="job-listings" class="space-y-6">
-            <!-- Job cards will be dynamically inserted here -->
-        </section>
+            </section>
 
     </main>
 
-    <!-- Modal for Job Details -->
     <div id="job-detail-modal" class="modal">
-        <div class="modal-content card-shadow">
+        <div class="modal-content shadow-lg">
             <div class="flex justify-between items-start">
                 <h2 class="text-2xl font-bold text-gray-800" id="modal-job-title"></h2>
                 <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
             </div>
             <div id="modal-job-content" class="mt-4 text-gray-700">
-                <!-- Job details will be inserted here -->
-            </div>
+                </div>
             <div class="mt-6 flex justify-end">
                 <button onclick="closeModal()" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-semibold mr-2 btn-hover">Tutup</button>
                 <button onclick="applyJob()" class="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold btn-hover">Lamar Sekarang</button>
@@ -134,7 +145,7 @@
 
             jobs.forEach(job => {
                 const jobCard = `
-                    <div class="bg-white p-6 rounded-xl card-shadow flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center">
                         <div class="flex-grow">
                             <div class="flex items-center space-x-2 text-gray-500 mb-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><line x1="12" x2="12" y1="12" y2="17"/></svg>

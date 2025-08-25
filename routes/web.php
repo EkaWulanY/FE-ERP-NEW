@@ -5,6 +5,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\P_PelamarController; // <-- Tambahkan baris ini
 // ROUTES UNTUK PELAMAR (Frontend)
 Route::get('/lowongan-kerja', [P_PelamarController::class, 'index'])->name('pelamar.jobs');
+// Rute API untuk mengambil daftar lowongan yang aktif
+Route::get('/api/jobs/aktif', [P_PelamarController::class, 'getAktifJobs']);
 
 //----------------------------------------------------------------------------------
 
