@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\PertanyaanTambahan; // Pastikan Anda memiliki model ini
 
 class AdminController extends Controller
 {
@@ -48,7 +49,7 @@ class AdminController extends Controller
     public function storeJob(Request $request)
     {
         $validated = $request->validate([
-            'posisi'       => 'required|string|max:255',
+            'posisi'      => 'required|string|max:255',
             'deskripsi_job' => 'required|string',
         ]);
 
@@ -124,6 +125,7 @@ class AdminController extends Controller
             return redirect()->route('admin.jobs.list')->with('error', 'Gagal menonaktifkan job.');
         }
     }
+
     /* ==========================================================
      * PELAMAR MANAGEMENT
      * ========================================================== */
@@ -242,36 +244,35 @@ class AdminController extends Controller
     public function storeFormLamaran(Request $request)
     {
         $validatedData = $request->validate([
-            'nama_lengkap'              => 'required|string|max:255',
-            'tempat_lahir'              => 'nullable|string|max:50',
-            'tanggal_lahir'             => 'nullable|date',
-            'umur'                      => 'nullable|integer',
-            'alamat'                    => 'nullable|string',
-            'no_hp'                     => 'required|string|max:20',
-            'email'                     => 'required|email',
-            'pendidikan_terakhir'       => 'nullable|string|max:50',
-            'nama_sekolah'              => 'nullable|string|max:100',
-            'jurusan'                   => 'nullable|string|max:100',
-            'pengetahuan_perusahaan'    => 'nullable|string',
-            'bersedia_cilacap'          => 'nullable|string|in:bersedia,tidak bersedia',
-            'keahlian'                  => 'nullable|string',
-            'tujuan_daftar'             => 'nullable|string',
-            'kelebihan'                 => 'nullable|string',
-            'kekurangan'                => 'nullable|string',
-            'sosmed_aktif'              => 'nullable|string|max:100',
-            'alasan_merekrut'           => 'nullable|string',
-            'kelebihan_dari_yang_lain'  => 'nullable|string',
+            'nama_lengkap' => 'required|string|max:255',
+            'tempat_lahir' => 'nullable|string|max:50',
+            'tanggal_lahir' => 'nullable|date',
+            'umur' => 'nullable|integer',
+            'alamat' => 'nullable|string',
+            'no_hp' => 'required|string|max:20',
+            'email' => 'required|email',
+            'pendidikan_terakhir' => 'nullable|string|max:50',
+            'nama_sekolah' => 'nullable|string|max:100',
+            'jurusan' => 'nullable|string|max:100',
+            'pengetahuan_perusahaan' => 'nullable|string',
+            'bersedia_cilacap' => 'nullable|string|in:bersedia,tidak bersedia',
+            'keahlian' => 'nullable|string',
+            'tujuan_daftar' => 'nullable|string',
+            'kelebihan' => 'nullable|string',
+            'kekurangan' => 'nullable|string',
+            'sosmed_aktif' => 'nullable|string|max:100',
+            'alasan_merekrut' => 'nullable|string',
+            'kelebihan_dari_yang_lain' => 'nullable|string',
             'alasan_bekerja_dibawah_tekanan' => 'nullable|string',
-            'kapan_bisa_gabung'         => 'nullable|string|max:50',
-            'ekspektasi_gaji'           => 'nullable|string|max:50',
-            'alasan_ekspektasi'         => 'nullable|string',
-            'job_id'                    => 'required|integer',
-            'cv'                        => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-            'foto'                      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'kapan_bisa_gabung' => 'nullable|string|max:50',
+            'ekspektasi_gaji' => 'nullable|string|max:50',
+            'alasan_ekspektasi' => 'nullable|string',
+            'job_id' => 'required|integer',
+            'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         try {
-            // File handling
             $multipart = [];
             foreach ($validatedData as $key => $value) {
                 if (!in_array($key, ['cv', 'foto'])) {
@@ -281,7 +282,7 @@ class AdminController extends Controller
 
             if ($request->hasFile('cv')) {
                 $multipart[] = [
-                    'name'     => 'cv',
+                    'name' => 'cv',
                     'contents' => fopen($request->file('cv')->getPathname(), 'r'),
                     'filename' => $request->file('cv')->getClientOriginalName(),
                 ];
@@ -289,7 +290,7 @@ class AdminController extends Controller
 
             if ($request->hasFile('foto')) {
                 $multipart[] = [
-                    'name'     => 'foto',
+                    'name' => 'foto',
                     'contents' => fopen($request->file('foto')->getPathname(), 'r'),
                     'filename' => $request->file('foto')->getClientOriginalName(),
                 ];
@@ -301,6 +302,76 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             Log::error('Error submitting lamaran: ' . $e->getMessage());
             return back()->withInput()->with('error', 'Gagal mengirim lamaran.');
+        }
+    }
+
+    /* ==========================================================
+     * MANAJEMEN PERTANYAAN TAMBAHAN
+     * ========================================================== */
+
+    public function showEditFormLamaran()
+    {
+        try {
+            // Ambil semua pertanyaan tambahan dari database
+            $pertanyaan = PertanyaanTambahan::all();
+
+            // Ambil data jobs (tetap relevan untuk dropdown)
+            $response = Http::get("http://localhost:8080/api/jobs")->throw();
+            $jobs = $response->json();
+            $jobs = is_array($jobs) ? $jobs : [];
+        } catch (\Exception $e) {
+            Log::error('Error fetching jobs or pertanyaan: ' . $e->getMessage());
+            $jobs = [];
+            $pertanyaan = collect();
+        }
+
+        return view('admin.edit-form-lamaran', compact('jobs', 'pertanyaan'));
+    }
+
+    public function storePertanyaan(Request $request)
+    {
+        $validated = $request->validate([
+            'pertanyaan' => 'required|string|max:255',
+        ]);
+
+        try {
+            PertanyaanTambahan::create([
+                'pertanyaan' => $validated['pertanyaan']
+            ]);
+
+            return back()->with('success', 'Pertanyaan berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            Log::error('Error storing new pertanyaan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menambahkan pertanyaan.');
+        }
+    }
+
+    public function updatePertanyaan(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'pertanyaan' => 'required|string|max:255',
+        ]);
+
+        try {
+            $pertanyaan = PertanyaanTambahan::findOrFail($id);
+            $pertanyaan->pertanyaan = $validated['pertanyaan'];
+            $pertanyaan->save();
+
+            return back()->with('success', 'Pertanyaan berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Log::error('Error updating pertanyaan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memperbarui pertanyaan.');
+        }
+    }
+
+    public function deletePertanyaan($id)
+    {
+        try {
+            PertanyaanTambahan::findOrFail($id)->delete();
+            return back()->with('success', 'Pertanyaan berhasil dihapus.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting pertanyaan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus pertanyaan.');
         }
     }
 }

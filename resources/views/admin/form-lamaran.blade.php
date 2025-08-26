@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Form Lamaran - Admin</title>
+    <title>Form Lamaran Kerja</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -20,18 +18,13 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Aturan CSS baru untuk membuat kotak yang bisa digulir */
         .form-scroll-container {
             max-height: 70vh;
-            /* Sesuaikan tinggi sesuai kebutuhan, 70vh artinya 70% dari tinggi viewport */
             overflow-y: auto;
-            /* Memungkinkan gulir vertikal jika konten melebihi tinggi */
             padding-right: 1rem;
-            /* Memberikan sedikit ruang di kanan agar scrollbar tidak menempel */
         }
     </style>
 </head>
-
 <body class="bg-gray-200">
     <div class="bg-[#072A75] text-white p-4 flex justify-between items-center shadow-lg">
         <div class="flex items-center">
@@ -40,12 +33,8 @@
         </div>
         <div class="flex items-center">
             <span class="mr-2">Admin</span>
-            <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="2">
-
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-
+            <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
         </div>
     </div>
@@ -54,7 +43,7 @@
         <div class="flex justify-center space-x-4 mb-8">
             <a href="{{ route('admin.jobs.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">List Job</a>
             <a href="{{ route('admin.pelamar.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Data Pelamar</a>
-            <a href="{{ route('admin.form.lamaran') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Edit Form Daftar</a>
+            <a href="{{ route('admin.form.edit') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Edit Form Daftar</a>
         </div>
 
         @if (session('success'))
@@ -67,7 +56,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">Form Lamaran Kerja</h2>
-                <button type="button" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-blue-600">Edit Form</button>
+                <a href="{{ route('admin.form.edit') }}" class="bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-cyan-600">Edit Form</a>
             </div>
 
             <div class="form-scroll-container">
@@ -189,7 +178,6 @@
 
                     <div class="flex justify-between mt-8">
                         <a href="#" class="bg-green-500 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-green-600">View Perubahan Form</a>
-
                         <button type="submit" class="bg-blue-500 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-blue-600">Simpan Perubahan</button>
                     </div>
                 </form>
