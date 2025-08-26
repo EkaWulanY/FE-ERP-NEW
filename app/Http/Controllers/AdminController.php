@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\PertanyaanTambahan; // Pastikan Anda memiliki model ini
+use App\Models\FormField;
+use App\Models\Job;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -237,7 +239,6 @@ class AdminController extends Controller
             Log::error('Error fetching jobs for lamaran: ' . $e->getMessage());
             $jobs = [];
         }
-
         return view('admin.form-lamaran', compact('jobs'));
     }
 
@@ -308,44 +309,46 @@ class AdminController extends Controller
     /* ==========================================================
      * MANAJEMEN PERTANYAAN TAMBAHAN
      * ========================================================== */
-
     public function showEditFormLamaran()
     {
-        // Inisialisasi variabel di luar blok try...catch
         $jobs = [];
-        $pertanyaan = collect(); // Menggunakan collect() atau [] adalah pilihan yang baik
+        $formFields = collect(); 
 
         try {
-            // Ambil semua pertanyaan tambahan dari database
-            $pertanyaan = PertanyaanTambahan::all();
-
-            // Ambil data jobs (tetap relevan untuk dropdown)
-            $response = Http::get("http://localhost:8080/api/jobs")->throw();
+            // Fetch jobs from API and convert to array for the view
+            $response = Http::get("{$this->baseUrl}/api/jobs")->throw();
             $jobs = $response->json();
             $jobs = is_array($jobs) ? $jobs : [];
+            
+            // Fetch form fields from database with the job relationship
+            $formFields = FormField::with('job')->get();
         } catch (\Exception $e) {
-            Log::error('Error fetching jobs or pertanyaan: ' . $e->getMessage());
-            // Jika terjadi error, variabel $jobs dan $pertanyaan sudah memiliki nilai default
+            Log::error('Error fetching jobs or form fields: ' . $e->getMessage());
         }
 
-        // Sekarang variabel $jobs dan $pertanyaan dijamin selalu ada
-        return view('admin.edit-form-lamaran', compact('jobs', 'pertanyaan'));
+        return view('admin.edit-form-lamaran', compact('jobs', 'formFields'));
     }
 
     public function storePertanyaan(Request $request)
     {
         $validated = $request->validate([
-            'pertanyaan' => 'required|string|max:255',
+            'label'  => 'required|string|max:255',
+            'id_job' => 'required|integer|exists:job,id_job',
         ]);
 
         try {
-            PertanyaanTambahan::create([
-                'pertanyaan' => $validated['pertanyaan']
+            FormField::create([
+                'id_job'     => $validated['id_job'],
+                'label'      => $validated['label'],
+                'nama_field' => 'pertanyaan_tambahan_' . Str::slug($validated['label'], '_'),
+                'tipe'       => 'textarea',
+                'wajib'      => 1,
+                'urutan'     => FormField::where('id_job', $validated['id_job'])->max('urutan') + 1,
             ]);
 
             return back()->with('success', 'Pertanyaan berhasil ditambahkan.');
         } catch (\Exception $e) {
-            Log::error('Error storing new pertanyaan: ' . $e->getMessage());
+            Log::error('Error storing new form field: ' . $e->getMessage());
             return back()->with('error', 'Gagal menambahkan pertanyaan.');
         }
     }
@@ -353,17 +356,17 @@ class AdminController extends Controller
     public function updatePertanyaan(Request $request, $id)
     {
         $validated = $request->validate([
-            'pertanyaan' => 'required|string|max:255',
+            'label' => 'required|string|max:255',
         ]);
 
         try {
-            $pertanyaan = PertanyaanTambahan::findOrFail($id);
-            $pertanyaan->pertanyaan = $validated['pertanyaan'];
-            $pertanyaan->save();
+            $formField = FormField::findOrFail($id);
+            $formField->label = $validated['label'];
+            $formField->save();
 
             return back()->with('success', 'Pertanyaan berhasil diperbarui.');
         } catch (\Exception $e) {
-            Log::error('Error updating pertanyaan: ' . $e->getMessage());
+            Log::error('Error updating form field: ' . $e->getMessage());
             return back()->with('error', 'Gagal memperbarui pertanyaan.');
         }
     }
@@ -371,10 +374,10 @@ class AdminController extends Controller
     public function deletePertanyaan($id)
     {
         try {
-            PertanyaanTambahan::findOrFail($id)->delete();
+            FormField::findOrFail($id)->delete();
             return back()->with('success', 'Pertanyaan berhasil dihapus.');
         } catch (\Exception $e) {
-            Log::error('Error deleting pertanyaan: ' . $e->getMessage());
+            Log::error('Error deleting form field: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus pertanyaan.');
         }
     }

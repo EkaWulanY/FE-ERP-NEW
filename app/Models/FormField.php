@@ -29,6 +29,8 @@ class FormField extends Model
 
     public function job()
     {
-        return $this->belongsTo(Job::class, 'id_job', 'id');
+        // Fix: Explicitly define the foreign key and local key
+        // `id_job` on `field_job` table relates to `id_job` on `job` table
+        return $this->belongsTo(Job::class, 'id_job', 'id_job');
     }
 }

@@ -9,16 +9,14 @@ class Job extends Model
 {
     use HasFactory;
 
-    // Nama tabel yang terhubung dengan model ini
     protected $table = 'job';
-
-    // Nama primary key dari tabel
     protected $primaryKey = 'id_job';
+    public $timestamps = false; // Assuming timestamps are not used
+    public $incrementing = false; // Assuming primary key is not an auto-incrementing integer
 
-    // Kolom yang dapat diisi secara massal
     protected $fillable = [
         'id_job',
-        'posisi', // Pastikan nama kolom di sini juga 'posisi' (huruf kecil)
+        'posisi',
         'deskripsi',
         'deskripsi_singkat',
         'deskripsi_pekerjaan',
