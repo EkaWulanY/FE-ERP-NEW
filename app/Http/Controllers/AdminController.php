@@ -311,6 +311,10 @@ class AdminController extends Controller
 
     public function showEditFormLamaran()
     {
+        // Inisialisasi variabel di luar blok try...catch
+        $jobs = [];
+        $pertanyaan = collect(); // Menggunakan collect() atau [] adalah pilihan yang baik
+
         try {
             // Ambil semua pertanyaan tambahan dari database
             $pertanyaan = PertanyaanTambahan::all();
@@ -321,10 +325,10 @@ class AdminController extends Controller
             $jobs = is_array($jobs) ? $jobs : [];
         } catch (\Exception $e) {
             Log::error('Error fetching jobs or pertanyaan: ' . $e->getMessage());
-            $jobs = [];
-            $pertanyaan = collect();
+            // Jika terjadi error, variabel $jobs dan $pertanyaan sudah memiliki nilai default
         }
 
+        // Sekarang variabel $jobs dan $pertanyaan dijamin selalu ada
         return view('admin.edit-form-lamaran', compact('jobs', 'pertanyaan'));
     }
 
