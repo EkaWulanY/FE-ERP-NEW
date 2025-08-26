@@ -105,7 +105,7 @@
                             <select name="job_id" class="w-full border rounded-lg px-4 py-2">
                                 <option value="">-- Pilih Posisi --</option>
                                 @foreach($jobs as $job)
-                                <option value="{{ $job['id_job'] ?? '' }}">{{ $job['posisi'] ?? '' }}</option>
+                                <option value="{{ $job['id_job'] }}">{{ $job['posisi'] }}</option>
                                 @endforeach
                             </select>
                         </div>
