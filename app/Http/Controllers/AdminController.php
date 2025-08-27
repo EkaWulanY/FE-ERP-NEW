@@ -18,14 +18,6 @@ class AdminController extends Controller
         $this->baseUrl = config('services.api_backend.base_url', 'http://localhost:8080');
     }
 
-    /**
-     * Dashboard Admin
-     */
-    public function dashboard()
-    {
-        return view('admin.dashboard');
-    }
-
     /* ==========================================================
      * JOBS MANAGEMENT
      * ========================================================== */
@@ -39,7 +31,6 @@ class AdminController extends Controller
             Log::error('Error fetching jobs: ' . $e->getMessage());
             $jobs = [];
         }
-
         return view('admin.list-jobs', compact('jobs'));
     }
 
@@ -52,11 +43,29 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'posisi'      => 'required|string|max:255',
-            'deskripsi_job' => 'required|string',
+            'deskripsi'   => 'required|string',
+            'jobdesk'     => 'required|string',
+            'kualifikasi' => 'required|string',
+            'lokasi'      => 'required|string|max:255',
+            'status'      => 'nullable|string|in:aktif,nonaktif',
+            'tanggal_post' => 'required|date'
         ]);
 
+        $payload = [
+            'posisi'      => $validated['posisi'],
+            'deskripsi'   => $validated['deskripsi'],
+            'jobdesk'     => $validated['jobdesk'],
+            'kualifikasi' => $validated['kualifikasi'],
+            'lokasi'      => $validated['lokasi'],
+            'tanggal_post' => $validated['tanggal_post'],
+            'status'      => $validated['status'] ?? 'aktif',
+            'pendidikan_min' => null,
+            'image_url' => null,
+            'batas_lamaran' => null
+        ];
+
         try {
-            Http::post("{$this->baseUrl}/api/jobs", $validated)->throw();
+            Http::post("{$this->baseUrl}/api/jobs", $payload)->throw();
             return redirect()->route('admin.jobs.list')->with('success', 'Job berhasil ditambahkan.');
         } catch (\Exception $e) {
             Log::error('Error storing job: ' . $e->getMessage());
@@ -72,19 +81,33 @@ class AdminController extends Controller
             Log::error('Error fetching job: ' . $e->getMessage());
             return redirect()->route('admin.jobs.list')->with('error', 'Job tidak ditemukan.');
         }
-
         return view('admin.create-job', compact('job'));
     }
 
     public function updateJob(Request $request, $id)
     {
         $validated = $request->validate([
-            'posisi'    => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'status'    => 'nullable|string|in:aktif,nonaktif',
+            'posisi'      => 'required|string|max:255',
+            'deskripsi'   => 'required|string',
+            'jobdesk'     => 'required|string',
+            'kualifikasi' => 'required|string',
+            'lokasi'      => 'required|string|max:255',
+            'status'      => 'nullable|string|in:aktif,nonaktif',
+            'tanggal_post' => 'required|date'
         ]);
 
-        $payload = array_filter($validated, fn($v) => !is_null($v));
+        $payload = [
+            'posisi'      => $validated['posisi'],
+            'deskripsi'   => $validated['deskripsi'],
+            'jobdesk'     => $validated['jobdesk'],
+            'kualifikasi' => $validated['kualifikasi'],
+            'lokasi'      => $validated['lokasi'],
+            'tanggal_post' => $validated['tanggal_post'],
+            'status'      => $validated['status'] ?? 'aktif',
+            'pendidikan_min' => null,
+            'image_url' => null,
+            'batas_lamaran' => null
+        ];
 
         try {
             Http::put("{$this->baseUrl}/api/jobs/{$id}", $payload)->throw();
@@ -134,10 +157,32 @@ class AdminController extends Controller
     public function listPelamar()
     {
         try {
-            $pelamar = Http::get('http://localhost:8080/api/pelamar')->throw()->json();
+            // Ambil data pelamar dari API
+            $responsePelamar = Http::get("{$this->baseUrl}/api/pelamar")->throw();
+            $pelamar = $responsePelamar->json();
             $pelamar = is_array($pelamar) ? $pelamar : [];
+
+            // Ambil data jobs dari API
+            $responseJobs = Http::get("{$this->baseUrl}/api/jobs")->throw();
+            $jobs = $responseJobs->json();
+            $jobs = is_array($jobs) ? $jobs : [];
+
+            // Buat map (peta) dari id_job ke posisi_job untuk pencarian cepat
+            $jobMap = collect($jobs)->keyBy('id')->map(function ($job) {
+                return $job['posisi'];
+            })->all();
+            
+            // Gabungkan data pelamar dengan posisi job
+            foreach ($pelamar as $key => $p) {
+                // Gunakan array access untuk data dari JSON
+                if (isset($p['id_job']) && isset($jobMap[$p['id_job']])) {
+                    $pelamar[$key]['posisi_dilamar'] = $jobMap[$p['id_job']];
+                } else {
+                    $pelamar[$key]['posisi_dilamar'] = 'N/A';
+                }
+            }
         } catch (\Exception $e) {
-            Log::error('Error fetching pelamar: ' . $e->getMessage());
+            Log::error('Error fetching pelamar or jobs: ' . $e->getMessage());
             $pelamar = [];
         }
 
@@ -147,7 +192,7 @@ class AdminController extends Controller
     public function viewPelamar($id)
     {
         try {
-            $pelamar = Http::get("http://localhost:8080/api/pelamar/{$id}")->throw()->json();
+            $pelamar = Http::get("{$this->baseUrl}/api/pelamar/{$id}")->throw()->json();
             if (!is_array($pelamar)) {
                 return redirect()->route('admin.pelamar.list')->with('error', 'Data pelamar tidak valid.');
             }
@@ -162,7 +207,7 @@ class AdminController extends Controller
     public function editPelamar($id)
     {
         try {
-            $pelamar = Http::get("http://localhost:8080/api/pelamar/{$id}")->throw()->json();
+            $pelamar = Http::get("{$this->baseUrl}/api/pelamar/{$id}")->throw()->json();
         } catch (\Exception $e) {
             Log::error('Error fetching pelamar for edit: ' . $e->getMessage());
             return redirect()->route('admin.pelamar.list')->with('error', 'Data pelamar tidak ditemukan.');
@@ -182,7 +227,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            Http::put("http://localhost:8080/api/pelamar/{$id}", $validated)->throw();
+            Http::put("{$this->baseUrl}/api/pelamar/{$id}", $validated)->throw();
             return redirect()->route('admin.pelamar.list')->with('success', 'Data pelamar berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error('Error updating pelamar: ' . $e->getMessage());
@@ -193,7 +238,7 @@ class AdminController extends Controller
     public function acceptPelamar($id)
     {
         try {
-            Http::post("http://localhost:8080/api/pelamar/{$id}/done")->throw();
+            Http::post("{$this->baseUrl}/api/pelamar/{$id}/done")->throw();
             return redirect()->route('admin.pelamar.list')->with('success', 'Pelamar berhasil diterima.');
         } catch (\Exception $e) {
             Log::error('Error accepting pelamar: ' . $e->getMessage());
@@ -204,7 +249,7 @@ class AdminController extends Controller
     public function rejectPelamar($id)
     {
         try {
-            Http::post("http://localhost:8080/api/pelamar/{$id}/reject")->throw();
+            Http::post("{$this->baseUrl}/api/pelamar/{$id}/reject")->throw();
             return redirect()->route('admin.pelamar.list')->with('success', 'Pelamar berhasil ditolak.');
         } catch (\Exception $e) {
             Log::error('Error rejecting pelamar: ' . $e->getMessage());
@@ -219,7 +264,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            Http::put("http://localhost:8080/api/pelamar/{$id}/status", $validated)->throw();
+            Http::put("{$this->baseUrl}/api/pelamar/{$id}/status", $validated)->throw();
             return redirect()->route('admin.pelamar.list')->with('success', 'Status pelamar berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error('Error updating status pelamar: ' . $e->getMessage());
@@ -233,7 +278,7 @@ class AdminController extends Controller
     public function showFormLamaran()
     {
         try {
-            $jobs = Http::get('http://localhost:8080/api/jobs')->throw()->json();
+            $jobs = Http::get("{$this->baseUrl}/api/jobs")->throw()->json();
             $jobs = is_array($jobs) ? $jobs : [];
         } catch (\Exception $e) {
             Log::error('Error fetching jobs for lamaran: ' . $e->getMessage());
@@ -297,7 +342,7 @@ class AdminController extends Controller
                 ];
             }
 
-            Http::asMultipart()->post('http://localhost:8080/api/pelamar', $multipart)->throw();
+            Http::asMultipart()->post("{$this->baseUrl}/api/pelamar", $multipart)->throw();
 
             return redirect()->route('admin.pelamar.list')->with('success', 'Lamaran berhasil dikirim.');
         } catch (\Exception $e) {
@@ -312,15 +357,13 @@ class AdminController extends Controller
     public function showEditFormLamaran()
     {
         $jobs = [];
-        $formFields = collect(); 
+        $formFields = collect();
 
         try {
-            // Fetch jobs from API and convert to array for the view
             $response = Http::get("{$this->baseUrl}/api/jobs")->throw();
             $jobs = $response->json();
             $jobs = is_array($jobs) ? $jobs : [];
-            
-            // Fetch form fields from database with the job relationship
+
             $formFields = FormField::with('job')->get();
         } catch (\Exception $e) {
             Log::error('Error fetching jobs or form fields: ' . $e->getMessage());
@@ -333,7 +376,7 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'label'  => 'required|string|max:255',
-            'id_job' => 'required|integer|exists:job,id_job',
+            'id_job' => 'required|integer|exists:jobs,id',
         ]);
 
         try {

@@ -53,7 +53,6 @@
 </head>
 
 <body class="bg-gray-200">
-    <!-- Navbar -->
     <div class="bg-[#072A75] text-white p-4 flex justify-between items-center shadow-lg">
         <div class="flex items-center">
             <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-8 w-8 mr-2 rounded-full">
@@ -68,14 +67,12 @@
     </div>
 
     <div class="container mx-auto p-8">
-        <!-- Menu -->
         <div class="flex justify-center space-x-4 mb-8">
             <a href="{{ route('admin.jobs.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">List Job</a>
             <a href="{{ route('admin.pelamar.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Data Pelamar</a>
             <a href="{{ route('admin.form.lamaran') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Edit Form Daftar</a>
         </div>
 
-        <!-- Alert -->
         @if (session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
             <span class="block sm:inline">{{ session('success') }}</span>
@@ -87,7 +84,6 @@
         </div>
         @endif
 
-        <!-- Tabel Pelamar -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">Daftar Pelamar</h2>
@@ -136,17 +132,16 @@
                         @endphp
 
                         <tr>
-                            <!-- Nama -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $p->nama_lengkap ?? 'N/A' }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $pelamarData['nama_lengkap'] ?? 'N/A' }}</div>
                             </td>
 
-                            <!-- Posisi -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $p->posisi ?? 'N/A' }}</div>
+                                <div class="text-sm text-gray-900">
+                                    {{ $pelamarData['posisi_dilamar'] ?? 'N/A' }}
+                                </div>
                             </td>
 
-                            <!-- Aksi -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
                                     @if($pid)
@@ -165,12 +160,10 @@
                                 </div>
                             </td>
 
-                            <!-- Status -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <span class="{{ $statusClass }}">{{ $statusText }}</span>
                             </td>
 
-                            <!-- Detail -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 @if($pid)
                                 <a href="{{ route('admin.pelamar.view', $pid) }}" class="text-blue-600 hover:text-blue-900 mr-2">View</a>
