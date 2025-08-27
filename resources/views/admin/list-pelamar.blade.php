@@ -135,10 +135,9 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $pelamarData['nama_lengkap'] ?? 'N/A' }}</div>
                             </td>
-
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
-                                    {{ $pelamarData['posisi_dilamar'] ?? 'N/A' }}
+                                    {{ $pelamarData['posisi'] ?? $pelamarData['posisi_dilamar'] ?? 'N/A' }}
                                 </div>
                             </td>
 

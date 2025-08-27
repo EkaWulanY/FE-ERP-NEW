@@ -11,6 +11,11 @@ use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
+    public function dashboard()
+    {
+        // ...
+        return view('admin.dashboard');
+    }
     private string $baseUrl;
 
     public function __construct()
@@ -167,20 +172,17 @@ class AdminController extends Controller
             $jobs = $responseJobs->json();
             $jobs = is_array($jobs) ? $jobs : [];
 
-            // Buat map (peta) dari id_job ke posisi_job untuk pencarian cepat
-            $jobMap = collect($jobs)->keyBy('id')->map(function ($job) {
-                return $job['posisi'];
-            })->all();
-            
-            // Gabungkan data pelamar dengan posisi job
+            // Map id_job => posisi
+            $jobMap = collect($jobs)->keyBy('id_job')->map(fn($j) => $j['posisi'])->all();
+
+            // Tambahkan posisi_dilamar ke setiap pelamar
             foreach ($pelamar as $key => $p) {
-                // Gunakan array access untuk data dari JSON
-                if (isset($p['id_job']) && isset($jobMap[$p['id_job']])) {
-                    $pelamar[$key]['posisi_dilamar'] = $jobMap[$p['id_job']];
-                } else {
-                    $pelamar[$key]['posisi_dilamar'] = 'N/A';
-                }
+                $idJob = $p['id_job'] ?? null;
+                $pelamar[$key]['posisi_dilamar'] = $idJob && isset($jobMap[$idJob])
+                    ? $jobMap[$idJob]
+                    : 'N/A';
             }
+
         } catch (\Exception $e) {
             Log::error('Error fetching pelamar or jobs: ' . $e->getMessage());
             $pelamar = [];
@@ -413,7 +415,6 @@ class AdminController extends Controller
             return back()->with('error', 'Gagal memperbarui pertanyaan.');
         }
     }
-
     public function deletePertanyaan($id)
     {
         try {

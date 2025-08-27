@@ -93,7 +93,7 @@
                             <input type="text" name="pendidikan_terakhir" value="{{ old('pendidikan_terakhir') }}" class="w-full border rounded-lg px-4 py-2">
                         </div>
                         <div>
-                            <label class="block text-gray-700 font-medium mb-2">Nama Sekolah</label>
+                            <label class="block text-gray-700 font-medium mb-2">Sekolah / Universitas</label>
                             <input type="text" name="nama_sekolah" value="{{ old('nama_sekolah') }}" class="w-full border rounded-lg px-4 py-2">
                         </div>
                         <div>
@@ -118,7 +118,7 @@
                             <input type="file" name="foto" class="w-full border rounded-lg px-4 py-2">
                         </div>
                         <div>
-                            <label class="block text-gray-700 font-medium mb-2">Bersedia Ditempatkan di Cilacap?</label>
+                            <label class="block text-gray-700 font-medium mb-2">Bersedia Ditempatkan ditempatkan dimanapun?</label>
                             <select name="bersedia_cilacap" class="w-full border rounded-lg px-4 py-2">
                                 <option value="" {{ old('bersedia_cilacap') == ''? 'selected' : '' }} disabled hidden>Pilih</option>
                                 <option value="bersedia" {{ old('bersedia_cilacap') == 'bersedia' ? 'selected' : '' }}>Bersedia</option>

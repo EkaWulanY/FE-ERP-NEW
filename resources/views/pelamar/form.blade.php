@@ -6,7 +6,9 @@
         <div class="card-header bg-primary text-white text-center">
             <h3 class="mb-0">Form Pendaftaran Pelamar</h3>
         </div>
-        <div class="card-body bg-light">
+
+        {{-- 🔹 Tambah container scroll --}}
+        <div class="card-body bg-light" style="max-height: 80vh; overflow-y: auto;">
             <form method="POST" action="{{ route('pelamar.store') }}" enctype="multipart/form-data">
                 @csrf
 

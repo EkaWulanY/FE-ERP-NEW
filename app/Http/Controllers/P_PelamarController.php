@@ -4,35 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Job;
-use App\Models\P_Job; // Hapus jika tidak digunakan atau ganti dengan 'Job'
 use App\Models\P_FormLamaran;
 use App\Models\P_PengalamanKerja;
-use Illuminate\Support\Facades\Http; // Ini penting untuk fungsi show()
+use Illuminate\Support\Facades\Http;
 
 class P_PelamarController extends Controller
 {
     /**
-     * Menampilkan halaman utama untuk pelamar.
-     * Halaman ini akan memuat daftar lowongan kerja aktif.
-     *
-     * @return \Illuminate\View\View
+     * Halaman utama pelamar (daftar lowongan kerja aktif).
      */
     public function index()
     {
-        // Kode asli dari file pertama: mengambil posisi unik untuk dropdown,
-        // meskipun p_pelamar_view.blade.php yang Anda berikan tidak menggunakannya.
-        // Namun, jika Anda membutuhkannya di masa depan, ini bisa menjadi kode yang relevan.
-        // Jika tidak, kode ini dapat dihapus.
-        $jobs = Job::select('posisi')->get()->unique('posisi');
-
-        // Mengembalikan view yang akan menampilkan halaman utama pelamar.
+        $jobs = Job::where('status', 'aktif')->orderBy('tanggal_post', 'desc')->get();
         return view('p_pelamar_view', compact('jobs'));
     }
 
     /**
-     * Mengambil daftar lowongan kerja yang berstatus 'aktif'.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * API untuk daftar lowongan aktif (JSON).
      */
     public function getAktifJobs()
     {
@@ -41,27 +29,27 @@ class P_PelamarController extends Controller
     }
 
     /**
-     * Menampilkan form lamaran.
-     *
-     * @return \Illuminate\View\View
+     * Form lamaran kerja.
      */
     public function create(Request $request)
     {
-        $jobs = \App\Models\Job::all();
-        $selectedJobId = $request->query('id_job'); // ambil dari URL
+        $jobs = Job::where('status', 'aktif')->get();
+        $selectedJobId = $request->query('id_job'); // ambil dari URL kalau ada
         return view('pelamar.form', compact('jobs', 'selectedJobId'));
     }
 
     /**
-     * Simpan data lamaran & pengalaman kerja.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Simpan lamaran & pengalaman kerja.
      */
     public function store(Request $request)
     {
-        // Validasi input di sini (disarankan untuk keamanan)
-        // ...
+        $request->validate([
+            'id_job' => 'required|exists:jobs,id',
+            'nama_lengkap' => 'required|string|max:255',
+            'email' => 'required|email',
+            'no_hp' => 'required|string|max:20',
+            'upload_berkas' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
 
         $lamaran = P_FormLamaran::create([
             'id_job' => $request->id_job,
@@ -79,50 +67,55 @@ class P_PelamarController extends Controller
             'kekurangan' => $request->kekurangan,
             'sosmed_aktif' => $request->sosmed_aktif,
             'ekspektasi_gaji' => $request->ekspektasi_gaji,
-            // Perhatikan penggunaan 'store' yang perlu diatur di filesystem config
             'upload_berkas' => $request->file('upload_berkas')?->store('berkas', 'public'),
         ]);
 
         if ($request->has('pengalaman')) {
             foreach ($request->pengalaman as $exp) {
-                P_PengalamanKerja::create([
-                    'id_lamaran' => $lamaran->id_lamaran,
-                    'nama_perusahaan' => $exp['nama_perusahaan'],
-                    'tahun_mulai' => $exp['tahun_mulai'],
-                    'tahun_selesai' => $exp['tahun_selesai'],
-                    'posisi' => $exp['posisi'],
-                    'pengalaman' => $exp['pengalaman'],
-                    'alasan_resign' => $exp['alasan_resign'],
-                ]);
+                if (!empty($exp['nama_perusahaan'])) {
+                    P_PengalamanKerja::create([
+                        'id_lamaran' => $lamaran->id_lamaran,
+                        'nama_perusahaan' => $exp['nama_perusahaan'],
+                        'tahun_mulai' => $exp['tahun_mulai'] ?? null,
+                        'tahun_selesai' => $exp['tahun_selesai'] ?? null,
+                        'posisi' => $exp['posisi'] ?? null,
+                        'pengalaman' => $exp['pengalaman'] ?? null,
+                        'alasan_resign' => $exp['alasan_resign'] ?? null,
+                    ]);
+                }
             }
         }
 
-        return redirect()->route('pelamar.show', $lamaran->id_lamaran);
+        return redirect()->route('pelamar.showLamaran', $lamaran->id_lamaran);
     }
 
     /**
-     * Menampilkan detail lamaran (readonly).
-     *
-     * @param  string $id
-     * @return \Illuminate\View\View
+     * Detail lowongan pekerjaan.
      */
-    public function show($id)
+    public function showJob($id)
     {
-        // Mengambil data dari API eksternal, sesuai dengan file kedua.
-        // Hati-hati: 'localhost' tidak akan bisa diakses dari lingkungan ini.
-        // Anda perlu menggantinya dengan URL yang dapat diakses dari server Anda.
-        $response = Http::get("http://localhost:8080/api/jobs/$id");
-        $job = $response->json();
+        $job = Job::find($id);
 
-        // Mengembalikan view untuk detail job.
+        if (!$job) {
+            $response = Http::get("http://localhost:8080/api/jobs/$id");
+            $job = $response->json();
+        }
+
         return view('p_job_detail', compact('job'));
     }
 
     /**
-     * Menampilkan halaman verifikasi (kirim ke WA).
-     *
-     * @param  string $id
-     * @return \Illuminate\View\View
+     * Detail lamaran pelamar.
+     */
+    public function showLamaran($id)
+    {
+        $pelamar = P_FormLamaran::with('job')->findOrFail($id);
+        return view('pelamar.detail', compact('pelamar'));
+    }
+
+
+    /**
+     * Halaman verifikasi (contoh kirim ke WA).
      */
     public function verifikasi($id)
     {
