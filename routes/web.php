@@ -73,3 +73,5 @@ Route::get('/form/edit', [AdminController::class, 'showEditFormLamaran'])->name(
 Route::post('/form/pertanyaan', [AdminController::class, 'storePertanyaan'])->name('admin.form.pertanyaan.store');
 Route::put('/form/pertanyaan/{id}', [AdminController::class, 'updatePertanyaan'])->name('admin.form.pertanyaan.update');
 Route::delete('/form/pertanyaan/{id}', [AdminController::class, 'deletePertanyaan'])->name('admin.form.pertanyaan.delete');
+// Route untuk view perubahan form lamaran
+Route::get('/form-lamaran/view-perubahan', [AdminController::class, 'viewPerubahan'])->name('formLamaran.viewPerubahan');

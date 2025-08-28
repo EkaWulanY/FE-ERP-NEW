@@ -182,7 +182,6 @@ class AdminController extends Controller
                     ? $jobMap[$idJob]
                     : 'N/A';
             }
-
         } catch (\Exception $e) {
             Log::error('Error fetching pelamar or jobs: ' . $e->getMessage());
             $pelamar = [];
@@ -424,5 +423,14 @@ class AdminController extends Controller
             Log::error('Error deleting form field: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus pertanyaan.');
         }
+    }
+    public function viewPerubahan()
+    {
+        // Ambil data terakhir form lamaran dari database jika ingin menampilkan
+        // atau bisa pakai session / dummy data untuk sementara
+        $formData = session('form_lamaran_data', []);
+
+        return view('admin.tampil-new-form-qr', compact('formData'));
+
     }
 }
