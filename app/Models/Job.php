@@ -7,22 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class Job extends Model
 {
-    use HasFactory;
-
     protected $table = 'job';
     protected $primaryKey = 'id_job';
-    public $timestamps = false; 
-    public $incrementing = false; 
+    public $timestamps = false;
 
+    // biar id_job auto increment (angka)
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    // kolom sesuai DB
     protected $fillable = [
-        'id_job',
         'posisi',
-        'deskripsi',
-        'deskripsi_singkat',
-        'deskripsi_pekerjaan',
-        'kualifikasi',
         'lokasi',
-        'tgl_post',
+        'pendidikan_min',
+        'deskripsi',
+        'kualifikasi',
+        'jobdesk',
+        'image_url',
+        'tanggal_post',
+        'batas_lamaran',
         'status',
+    ];
+
+    protected $casts = [
+        'tanggal_post' => 'date',
+        'batas_lamaran' => 'date',
     ];
 }

@@ -18,6 +18,7 @@ Route::post('/pelamar/form', [P_PelamarController::class, 'store'])->name('pelam
 // Detail Lamaran (id_lamaran)
 Route::get('/pelamar/detail/{id}', [P_PelamarController::class, 'showLamaran'])->name('pelamar.show');
 
+
 // Verifikasi Lamaran
 Route::get('/pelamar/verifikasi/{id}', [P_PelamarController::class, 'verifikasi'])->name('pelamar.verifikasi');
 

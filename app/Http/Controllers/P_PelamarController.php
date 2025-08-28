@@ -15,7 +15,10 @@ class P_PelamarController extends Controller
      */
     public function index()
     {
-        $jobs = Job::where('status', 'aktif')->orderBy('tanggal_post', 'desc')->get();
+        $jobs = Job::where('status', 'aktif')
+            ->orderBy('tanggal_post', 'desc')
+            ->get();
+
         return view('p_pelamar_view', compact('jobs'));
     }
 
@@ -24,7 +27,10 @@ class P_PelamarController extends Controller
      */
     public function getAktifJobs()
     {
-        $jobs = Job::where('status', 'aktif')->orderBy('tanggal_post', 'desc')->get();
+        $jobs = Job::where('status', 'aktif')
+            ->orderBy('tanggal_post', 'desc')
+            ->get();
+
         return response()->json($jobs);
     }
 
@@ -34,7 +40,7 @@ class P_PelamarController extends Controller
     public function create(Request $request)
     {
         $jobs = Job::where('status', 'aktif')->get();
-        $selectedJobId = $request->query('id_job'); // ambil dari URL kalau ada
+        $selectedJobId = $request->query('id_job');
         return view('pelamar.form', compact('jobs', 'selectedJobId'));
     }
 
@@ -43,14 +49,22 @@ class P_PelamarController extends Controller
      */
     public function store(Request $request)
     {
+        // ✅ Validasi: id_job harus ada di tabel job
         $request->validate([
-            'id_job' => 'required|exists:jobs,id',
+            'id_job' => 'required|exists:job,id_job',
             'nama_lengkap' => 'required|string|max:255',
             'email' => 'required|email',
             'no_hp' => 'required|string|max:20',
-            'upload_berkas' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'upload_berkas' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
+        // Simpan file (kalau ada)
+        $filePath = null;
+        if ($request->hasFile('upload_berkas')) {
+            $filePath = $request->file('upload_berkas')->store('berkas_pelamar', 'public');
+        }
+
+        // Simpan data lamaran
         $lamaran = P_FormLamaran::create([
             'id_job' => $request->id_job,
             'nama_lengkap' => $request->nama_lengkap,
@@ -62,14 +76,24 @@ class P_PelamarController extends Controller
             'email' => $request->email,
             'pendidikan_terakhir' => $request->pendidikan_terakhir,
             'nama_sekolah' => $request->nama_sekolah,
+            'jurusan' => $request->jurusan,
             'pengetahuan_perusahaan' => $request->pengetahuan_perusahaan,
+            'bersedia_cilacap' => $request->bersedia_cilacap,
+            'keahlian' => $request->keahlian,
+            'tujuan_daftar' => $request->tujuan_daftar,
             'kelebihan' => $request->kelebihan,
             'kekurangan' => $request->kekurangan,
             'sosmed_aktif' => $request->sosmed_aktif,
+            'alasan_merekrut' => $request->alasan_merekrut,
+            'kelebihan_dari_yang_lain' => $request->kelebihan_dari_yang_lain,
+            'alasan_bekerja_dibawah_tekanan' => $request->alasan_bekerja_dibawah_tekanan,
+            'kapan_bisa_gabung' => $request->kapan_bisa_gabung,
             'ekspektasi_gaji' => $request->ekspektasi_gaji,
-            'upload_berkas' => $request->file('upload_berkas')?->store('berkas', 'public'),
+            'alasan_ekspektasi' => $request->alasan_ekspektasi,
+            'upload_berkas' => $filePath,
         ]);
 
+        // Simpan pengalaman kerja
         if ($request->has('pengalaman')) {
             foreach ($request->pengalaman as $exp) {
                 if (!empty($exp['nama_perusahaan'])) {
@@ -86,7 +110,9 @@ class P_PelamarController extends Controller
             }
         }
 
-        return redirect()->route('pelamar.showLamaran', $lamaran->id_lamaran);
+        return redirect()
+            ->route('pelamar.show', $lamaran->id_lamaran)
+            ->with('success', 'Lamaran berhasil dikirim!');
     }
 
     /**
@@ -94,7 +120,7 @@ class P_PelamarController extends Controller
      */
     public function showJob($id)
     {
-        $job = Job::find($id);
+        $job = Job::where('id_job', $id)->first();
 
         if (!$job) {
             $response = Http::get("http://localhost:8080/api/jobs/$id");
@@ -113,9 +139,8 @@ class P_PelamarController extends Controller
         return view('pelamar.detail', compact('pelamar'));
     }
 
-
     /**
-     * Halaman verifikasi (contoh kirim ke WA).
+     * Halaman verifikasi.
      */
     public function verifikasi($id)
     {

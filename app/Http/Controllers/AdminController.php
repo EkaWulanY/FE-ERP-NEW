@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Models\FormField;
 use App\Models\Job;
 use Illuminate\Support\Str;
@@ -47,27 +48,34 @@ class AdminController extends Controller
     public function storeJob(Request $request)
     {
         $validated = $request->validate([
-            'posisi'      => 'required|string|max:255',
-            'deskripsi'   => 'required|string',
-            'jobdesk'     => 'required|string',
-            'kualifikasi' => 'required|string',
-            'lokasi'      => 'required|string|max:255',
-            'status'      => 'nullable|string|in:aktif,nonaktif',
-            'tanggal_post' => 'required|date'
+            'posisi'        => 'required|string|max:255',
+            'deskripsi'     => 'required|string',
+            'jobdesk'       => 'required|string',
+            'kualifikasi'   => 'required|string',
+            'lokasi'        => 'required|string|max:255',
+            'status'        => 'nullable|string|in:aktif,nonaktif',
+            'tanggal_post'  => 'required|date',
+            'pendidikan_min' => 'nullable|string|max:255',   //tambah
+            'batas_lamaran' => 'nullable|date',             // tambah
+            'image_url'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048' // tambah kalau upload gambar
         ]);
 
         $payload = [
-            'posisi'      => $validated['posisi'],
-            'deskripsi'   => $validated['deskripsi'],
-            'jobdesk'     => $validated['jobdesk'],
-            'kualifikasi' => $validated['kualifikasi'],
-            'lokasi'      => $validated['lokasi'],
-            'tanggal_post' => $validated['tanggal_post'],
-            'status'      => $validated['status'] ?? 'aktif',
-            'pendidikan_min' => null,
-            'image_url' => null,
-            'batas_lamaran' => null
+            'posisi'        => $validated['posisi'],
+            'deskripsi'     => $validated['deskripsi'],
+            'jobdesk'       => $validated['jobdesk'],
+            'kualifikasi'   => $validated['kualifikasi'],
+            'lokasi'        => $validated['lokasi'],
+            'tanggal_post'  => $validated['tanggal_post'],
+            'status'        => $validated['status'] ?? 'aktif',
+            'pendidikan_min' => $validated['pendidikan_min'] ?? null,
+            'batas_lamaran' => $validated['batas_lamaran'] ?? null,
         ];
+
+        if ($request->hasFile('image_url')) {
+            $path = $request->file('image_url')->store('jobs', 'public');
+            $payload['image_url'] = asset('storage/' . $path);
+        }
 
         try {
             Http::post("{$this->baseUrl}/api/jobs", $payload)->throw();
@@ -98,21 +106,44 @@ class AdminController extends Controller
             'kualifikasi' => 'required|string',
             'lokasi'      => 'required|string|max:255',
             'status'      => 'nullable|string|in:aktif,nonaktif',
-            'tanggal_post' => 'required|date'
+            'tanggal_post' => 'required|date',
+            'pendidikan_min' => 'nullable|string|max:255',   //tambahin
+            'batas_lamaran' => 'nullable|date',             //tambahin
+            'image_url'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
+
+        // ambil data job lama dulu
+        try {
+            $job = Http::get("{$this->baseUrl}/api/jobs/{$id}")->throw()->json();
+        } catch (\Exception $e) {
+            Log::error('Error fetching job for update: ' . $e->getMessage());
+            return back()->with('error', 'Job tidak ditemukan.');
+        }
+
         $payload = [
-            'posisi'      => $validated['posisi'],
-            'deskripsi'   => $validated['deskripsi'],
-            'jobdesk'     => $validated['jobdesk'],
-            'kualifikasi' => $validated['kualifikasi'],
-            'lokasi'      => $validated['lokasi'],
-            'tanggal_post' => $validated['tanggal_post'],
-            'status'      => $validated['status'] ?? 'aktif',
-            'pendidikan_min' => null,
-            'image_url' => null,
-            'batas_lamaran' => null
+            'posisi'        => $validated['posisi'],
+            'deskripsi'     => $validated['deskripsi'],
+            'jobdesk'       => $validated['jobdesk'],
+            'kualifikasi'   => $validated['kualifikasi'],
+            'lokasi'        => $validated['lokasi'],
+            'tanggal_post'  => $validated['tanggal_post'],
+            'status'        => $validated['status'] ?? 'aktif',
+            'pendidikan_min' => $validated['pendidikan_min'] ?? null,
+            'batas_lamaran' => $validated['batas_lamaran'] ?? null,
         ];
+
+        // hapus gambar lama kalau ada
+        if ($request->hasFile('image_url') && !empty($job['image_url'])) {
+            $oldPath = str_replace(asset('storage/'), '', $job['image_url']);
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        // simpan gambar baru
+        if ($request->hasFile('image_url')) {
+            $path = $request->file('image_url')->store('jobs', 'public');
+            $payload['image_url'] = asset('storage/' . $path);
+        }
 
         try {
             Http::put("{$this->baseUrl}/api/jobs/{$id}", $payload)->throw();
@@ -431,6 +462,5 @@ class AdminController extends Controller
         $formData = session('form_lamaran_data', []);
 
         return view('admin.tampil-new-form-qr', compact('formData'));
-
     }
 }

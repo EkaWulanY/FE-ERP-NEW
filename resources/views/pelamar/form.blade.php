@@ -48,7 +48,6 @@
                             </option>
                             @endforeach
                         </select>
-
                     </div>
                 </div>
 
@@ -75,9 +74,9 @@
                         <label class="form-label">Pendidikan Terakhir</label>
                         <select name="pendidikan_terakhir" class="form-select" required>
                             <option value="">-- Pilih Pendidikan --</option>
-                            <option value="SD" {{ old('pendidikan_terakhir') == 'SD/MI' ? 'selected' : '' }}>SD/MI</option>
-                            <option value="SMP" {{ old('pendidikan_terakhir') == 'SMP/MTS' ? 'selected' : '' }}>SMP</option>
-                            <option value="SMA" {{ old('pendidikan_terakhir') == 'SMA/SMK/MA' ? 'selected' : '' }}>SMA/SMK/MA</option>
+                            <option value="SD/MI" {{ old('pendidikan_terakhir') == 'SD/MI' ? 'selected' : '' }}>SD/MI</option>
+                            <option value="SMP/MTS" {{ old('pendidikan_terakhir') == 'SMP/MTS' ? 'selected' : '' }}>SMP/MTS</option>
+                            <option value="SMA/SMK/MA" {{ old('pendidikan_terakhir') == 'SMA/SMK/MA' ? 'selected' : '' }}>SMA/SMK/MA</option>
                             <option value="D3" {{ old('pendidikan_terakhir') == 'D3' ? 'selected' : '' }}>D3</option>
                             <option value="S1" {{ old('pendidikan_terakhir') == 'S1' ? 'selected' : '' }}>S1</option>
                         </select>
@@ -121,7 +120,7 @@
                         placeholder="Contoh: Instagram / LinkedIn" value="{{ old('sosmed_aktif') }}" required>
                 </div>
 
-                {{-- 🔹 FIELD TAMBAHAN MULAI DARI SINI --}}
+                {{-- 🔹 FIELD TAMBAHAN --}}
                 <div class="mb-3">
                     <label class="form-label">Bersediakah jika ditempatkan di lokasi manapun?</label>
                     <select name="bersedia_cilacap" class="form-select" required>
@@ -170,7 +169,6 @@
                     <label class="form-label">Mengapa Perusahaan harus memberikan gaji sesuai yang Anda harapkan?</label>
                     <textarea name="alasan_ekspektasi" class="form-control" rows="2" required>{{ old('alasan_ekspektasi') }}</textarea>
                 </div>
-                {{-- 🔹 FIELD TAMBAHAN SELESAI --}}
 
                 <div class="mb-3">
                     <label class="form-label">Upload Berkas</label>
@@ -181,7 +179,6 @@
                 <h5 class="text-primary">Pengalaman Kerja</h5>
                 <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="tambahPengalaman()">+ Tambah Pengalaman</button>
                 <div id="pengalaman-container">
-                    {{-- kalau ada old input, render ulang --}}
                     @if(old('pengalaman'))
                     @foreach(old('pengalaman') as $idx => $exp)
                     <div class="card p-3 mb-3 shadow-sm pengalaman-item">

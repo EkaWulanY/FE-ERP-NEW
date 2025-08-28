@@ -52,78 +52,121 @@
                 </ul>
             </div>
             @endif
-            <form action="{{ isset($job) ? route('admin.jobs.update', $job['id_job']) : route('admin.jobs.store') }}" method="POST">
+            <form
+            action="{{ isset($job) ? route('admin.jobs.update', $job['id_job']) : route('admin.jobs.store') }}"
+            method="POST"
+            enctype="multipart/form-data"
+            onsubmit="return confirm('Apakah yakin dengan inputan Anda? Mohon cek kembali!')"
+            >
                 @csrf
-                @if(isset($job))
-                @method('PUT')
-                @endif
+                @if(isset($job)) @method('PUT') @endif
+
+                <!-- Posisi -->
                 <div class="mb-4">
                     <label for="posisi" class="block text-gray-700 text-sm font-bold mb-2">Posisi:</label>
                     <input type="text" name="posisi" id="posisi"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+                        class="shadow appearance-none border rounded w-full py-2 px-3"
                         value="{{ old('posisi', $job['posisi'] ?? '') }}" required>
                 </div>
 
+                <!-- Deskripsi singkat (pakai kolom deskripsi di DB) -->
                 <div class="mb-4">
                     <label for="deskripsi" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Singkat:</label>
                     <textarea name="deskripsi" id="deskripsi" rows="3"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-                        required>{{ old('deskripsi', $job['deskripsi'] ?? '') }}</textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="jobdesk" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Pekerjaan:</label>
-                    <textarea name="jobdesk" id="jobdesk" rows="3"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-                        required>{{ old('jobdesk', $job['jobdesk'] ?? '') }}</textarea>
+                            class="shadow appearance-none border rounded w-full py-2 px-3"
+                            required>{{ old('deskripsi', $job['deskripsi'] ?? '') }}</textarea>
                 </div>
 
+                <!-- Jobdesk -->
+                <div class="mb-4">
+                    <label for="jobdesk" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Pekerjaan (Jobdesk):</label>
+                    <textarea name="jobdesk" id="jobdesk" rows="3"
+                            class="shadow appearance-none border rounded w-full py-2 px-3"
+                    >{{ old('jobdesk', $job['jobdesk'] ?? '') }}</textarea>
+                </div>
+
+                <!-- Kualifikasi -->
                 <div class="mb-4">
                     <label for="kualifikasi" class="block text-gray-700 text-sm font-bold mb-2">Kualifikasi:</label>
                     <textarea name="kualifikasi" id="kualifikasi" rows="3"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-                        required>{{ old('kualifikasi', $job['kualifikasi'] ?? '') }}</textarea>
+                            class="shadow appearance-none border rounded w-full py-2 px-3"
+                    >{{ old('kualifikasi', $job['kualifikasi'] ?? '') }}</textarea>
                 </div>
 
+                <!-- Pendidikan Minimal -->
+                <div class="mb-4">
+                    <label for="pendidikan_min" class="block text-gray-700 text-sm font-bold mb-2">Pendidikan Minimal:</label>
+                    <input list="pendidikan_list" name="pendidikan_min" id="pendidikan_min"
+                        class="shadow appearance-none border rounded w-full py-2 px-3"
+                        value="{{ old('pendidikan_min', $job['pendidikan_min'] ?? '') }}">
+                    <datalist id="pendidikan_list">
+                        <option value="SMA/SMK">
+                        <option value="D3">
+                        <option value="D4">
+                        <option value="S1">
+                        <option value="S2">
+                        <option value="S3">
+                    </datalist>
+                </div>
+
+
+                <!-- Lokasi -->
                 <div class="mb-4">
                     <label for="lokasi" class="block text-gray-700 text-sm font-bold mb-2">Lokasi:</label>
-                    <input type="text" name="lokasi" id="lokasi"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-                        value="{{ old('lokasi', $job['lokasi'] ?? '') }}" required>
+                    <input list="lokasi_list" name="lokasi" id="lokasi"
+                        class="shadow appearance-none border rounded w-full py-2 px-3"
+                        value="{{ old('lokasi', $job['lokasi'] ?? '') }}">
+                    <datalist id="lokasi_list">
+                        <option value="Cilacap">
+                        <option value="Tegal">
+                        <option value="Banyumas">
+                        <option value="Purbalingga">
+                    </datalist>
                 </div>
 
+                <!-- Tanggal Posting -->
                 <div class="mb-4">
                     <label for="tanggal_post" class="block text-gray-700 text-sm font-bold mb-2">Tanggal Posting:</label>
                     <input type="date" name="tanggal_post" id="tanggal_post"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+                        class="shadow appearance-none border rounded w-full py-2 px-3"
                         value="{{ old('tanggal_post', $job['tanggal_post'] ?? now()->toDateString()) }}" required>
                 </div>
 
+                <!-- Batas Lamaran -->
+                <div class="mb-4">
+                    <label for="batas_lamaran" class="block text-gray-700 text-sm font-bold mb-2">Batas Lamaran:</label>
+                    <input type="date" name="batas_lamaran" id="batas_lamaran"
+                        class="shadow appearance-none border rounded w-full py-2 px-3"
+                        value="{{ old('batas_lamaran', $job['batas_lamaran'] ?? '') }}">
+                </div>
+                <!-- Poster / Thumbnail -->
+                <div class="mb-4">
+                    <label for="image_url" class="block text-gray-700 text-sm font-bold mb-2">Poster/Thumbnail:</label>
+                    <input type="file" name="image_url" id="image_url" accept="image/*" class="block w-full text-sm text-gray-700">
+                    @if(isset($job) && !empty($job['image_url']))
+                        <div class="mt-2">
+                            <p class="text-xs text-gray-500 mb-1">Poster saat ini:</p>
+                            <img src="{{ $job['image_url'] }}" alt="Poster" class="h-24 rounded">
+                        </div>
+                    @endif
+                </div>
+                <!-- Status -->
                 <div class="mb-4">
                     <label for="status" class="block text-gray-700 text-sm font-bold mb-2">Status:</label>
                     <select name="status" id="status"
-                        class="shadow border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-                        required>
-                        <option value="aktif" {{ old('status', $job['status'] ?? '') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="nonaktif" {{ old('status', $job['status'] ?? '') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                            class="shadow border rounded w-full py-2 px-3" required>
+                        <option value="aktif"     {{ old('status', $job['status'] ?? '') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="nonaktif"  {{ old('status', $job['status'] ?? '') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                     </select>
                 </div>
-
-                <input type="hidden" name="pendidikan_min" value="">
-                <input type="hidden" name="image_url" value="">
-                <input type="hidden" name="batas_lamaran" value="">
                 <div class="flex items-center justify-between mt-6">
-                    <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">
+                    <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">
                         {{ isset($job) ? 'Update Lowongan' : 'Simpan Lowongan' }}
                     </button>
-                    <a href="{{ route('admin.jobs.list') }}" class="text-blue-500 hover:text-blue-800">
-                        Batal
-                    </a>
+                    <a href="{{ route('admin.jobs.list') }}" class="text-blue-500 hover:text-blue-800">Batal</a>
                 </div>
             </form>
-
         </div>
-
     </div>
 </body>
-
 </html>
