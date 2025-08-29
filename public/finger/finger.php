@@ -168,7 +168,7 @@ function getUsers($IP, $Key = "0")
     <!-- Header Navbar -->
     <div class="bg-[#072A75] text-white p-4 flex justify-between items-center shadow-lg">
         <div class="flex items-center">
-            <img src="logo.jpg" alt="Logo" class="h-8 w-8 mr-2 rounded-full">
+            <img src="/admin/img/logo.jpg" alt="Logo" class="h-8 w-8 mr-2 rounded-full">
             <span class="text-xl font-bold">Sistem ERP HR</span>
         </div>
 

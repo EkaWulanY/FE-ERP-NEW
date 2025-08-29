@@ -463,4 +463,20 @@ class AdminController extends Controller
 
         return view('admin.tampil-new-form-qr', compact('formData'));
     }
+    public function getPelamarFile($type, $filename)
+{
+    // type bisa: cv atau foto
+    $path = "pelamar/{$type}/{$filename}";
+
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404, 'File tidak ditemukan.');
+    }
+
+    // Kalau mau langsung download:
+    // return Storage::disk('public')->download($path);
+
+    // Kalau mau preview (PDF/Image):
+    return response()->file(storage_path("app/public/{$path}"));
+}
+
 }

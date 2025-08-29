@@ -76,3 +76,5 @@ Route::put('/form/pertanyaan/{id}', [AdminController::class, 'updatePertanyaan']
 Route::delete('/form/pertanyaan/{id}', [AdminController::class, 'deletePertanyaan'])->name('admin.form.pertanyaan.delete');
 // Route untuk view perubahan form lamaran
 Route::get('/form-lamaran/view-perubahan', [AdminController::class, 'viewPerubahan'])->name('formLamaran.viewPerubahan');
+// Route untuk menampilkan atau download file
+Route::get('/pelamar/file/{type}/{filename}', [AdminController::class, 'getPelamarFile'])->name('admin.pelamar.file');

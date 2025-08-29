@@ -116,14 +116,39 @@
                     <span class="label-style">Alasan Ekspektasi Gaji</span> :
                     <span class="value-style">{{ $pelamar['alasan_ekspektasi'] ?? 'N/A' }}</span>
                 </div>
-                <div>
-                    <span class="label-style">Upload Berkas</span> :
+
+                {{-- Upload Berkas --}}
+                <div class="mb-4">
+                    <span class="label-style">Upload Berkas:</span>
                     @if(!empty($pelamar['upload_berkas']))
-                    <a href="{{ asset('storage/'.$pelamar['upload_berkas']) }}" target="_blank" class="text-blue-600 hover:underline">Lihat Berkas</a>
+                        @php
+                            $ext = pathinfo($pelamar['upload_berkas'], PATHINFO_EXTENSION);
+                        @endphp
+
+                        @if(in_array(strtolower($ext), ['jpg','jpeg','png','gif']))
+                            <a href="{{ asset('storage/'.$pelamar['upload_berkas']) }}" target="_blank">
+                                <img src="{{ asset('storage/'.$pelamar['upload_berkas']) }}"
+                                    alt="Foto Pelamar"
+                                    class="w-32 h-32 object-cover rounded-lg border">
+                            </a>
+                        @elseif(in_array(strtolower($ext), ['pdf','doc','docx']))
+                            <a href="{{ asset('storage/'.$pelamar['upload_berkas']) }}"
+                                target="_blank"
+                                class="text-blue-600 hover:underline">
+                                Lihat Berkas
+                            </a>
+                        @else
+                            <a href="{{ asset('storage/'.$pelamar['upload_berkas']) }}"
+                                target="_blank"
+                                class="text-blue-600 hover:underline">
+                                Download File
+                            </a>
+                        @endif
                     @else
-                    <span class="value-style">N/A</span>
+                        <span class="text-gray-500">Tidak ada</span>
                     @endif
                 </div>
+
                 <div>
                     <span class="label-style">Tanggal Daftar</span> :
                     <span class="value-style">{{ !empty($pelamar['tgl_daftar']) ? \Carbon\Carbon::parse($pelamar['tgl_daftar'])->format('d F Y') : 'N/A' }}</span>
